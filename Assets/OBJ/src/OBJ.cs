@@ -142,7 +142,7 @@ public class OBJ : MonoBehaviour {
 
         if (Input.GetKeyDown(KeyCode.Alpha3))
             show_hide_body();
-        
+      
         SkinnedMeshRenderer renderer = GetComponent<SkinnedMeshRenderer>();
         if (load_state == LoadState.LOADOBJ || renderer.bones == null || renderer.bones.Length==0)
             return;
@@ -157,6 +157,7 @@ public class OBJ : MonoBehaviour {
             rot = buffer.normal_rot;
         
         GenerateBone.apply_posture(buffer.normal_pos[GenerateBone.HIP], rot, bones);
+        
         renderer.bones = bones;
     }
 

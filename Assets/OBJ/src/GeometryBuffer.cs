@@ -8,7 +8,7 @@ using NodeIdx = System.UInt16;
 public struct FaceIndices
 {
     public NodeIdx vi; //Vector3 point
-    public NodeIdx vp; //pair
+    public NodeIdx vp; //Vector3 and Vector2 combine to a pair
     public NodeIdx vu; //Vector2 uv
     public NodeIdx vn;
 }
@@ -50,9 +50,9 @@ public class VerticesTopo
     public const int VCONNECT_SIZE = 4;
     public const float HIGHT_KNEE = 0.26f;
     public const float HIGHT_HAMROOT = 0.473f;
-    public const float HIGHT_ARMROOT = 0.80f;
+    public const float HIGHT_ARMROOT = 0.785f;
     public const float HIGHT_NECK = 0.85f;
-    public const float LEN_FOREARM = 0.20f;
+    public const float LEN_FOREARM = 0.21f;
     public const float HIGHT_HIP = 0.510f;
     public const float HIGHT_SPINE = 0.600f;
     public int SECTION_NUM = 50;
@@ -764,7 +764,7 @@ public class VerticesTopo
                     }
                     else
                     {
-                        if (high < joint_pos[GenerateBone.RIGHTFORE_ARM].z)
+                        if (high < joint_pos[GenerateBone.LEFTFORE_ARM].z)
                             weights[vp].boneIndex0 = GenerateBone.LEFTFORE_ARM;
                         else
                             weights[vp].boneIndex0 = GenerateBone.LEFT_ARM;
@@ -1111,13 +1111,17 @@ public class GeometryBuffer {
                     m.normals = tnormals;
                 else
                     m.RecalculateNormals();
-#if true                        
+                      
                 Transform[] bones;
                 BoneWeight[] weights;
-                Debug.Log("build body=" + vtopo.build_body(out weights));
+                vtopo.build_body(out weights);
                 m.boneWeights = weights;
                 GenerateBone.compute_normal(vtopo.joint_pos, out normal_pos, out normal_rot);
-                bone_hip = GenerateBone.generate_bone(normal_pos, 10, out bones);
+#if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
+                bone_hip = GenerateBone.generate_bone(normal_pos, 10, out bones, true);
+#else
+                bone_hip = GenerateBone.generate_bone(normal_pos, 10, out bones, false);
+#endif
                 GenerateBone.apply_posture(normal_pos[GenerateBone.HIP], normal_rot, bones);
                 bones[GenerateBone.HIP].parent = gs[i].transform;
                 Matrix4x4[] bindPoses = new Matrix4x4[GenerateBone.TOTAL_PART];
@@ -1132,7 +1136,7 @@ public class GeometryBuffer {
                     sw.Write(j + ":" + normal_pos[j] + "," + normal_rot[j].eulerAngles + "\n");
                 sw.Close();
 #endif
-#else
+#if false
                 BoneWeight[] weights = new BoneWeight[tuvs.Length];
                 for (int j = 0; j < weights.Length; j++)
                 {

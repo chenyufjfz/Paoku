@@ -137,10 +137,10 @@ public class CameraMove3D : MonoBehaviour
     {
         string s;
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        s = "Load file://" + Application.streamingAssetsPath + "/model3.obj\n";
+        s = "Load file://" + Application.streamingAssetsPath + "/mod2el.obj\n";
 #else
 #if UNITY_ANDROID
-        s = "Load " + Application.streamingAssetsPath + "/model3.obj\n";
+        s= "Load file://" +"/sdcard/model.obj";        
 #endif
 #endif
         clientSocket.Send(System.Text.Encoding.ASCII.GetBytes(s));

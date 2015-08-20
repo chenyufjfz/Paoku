@@ -288,7 +288,7 @@ public class MovePara {
 		{352.7696f ,180f ,334.7977f},
 		{352.9392f ,180f ,332.3155f}};
 
-
+        /*
         right_arm_rot = new float[,]{
 		{57.57214f ,180f ,32.21281f},
 		{53.08313f ,180f ,32.12613f},
@@ -313,6 +313,44 @@ public class MovePara {
 		{24.71031f ,180f ,20.96805f},
 		{24.64495f ,180f ,20.8245f},
 		{24.44957f ,180f ,20.27422f},
+		{24.5199f ,180f ,20.23809f},
+		{25.55348f ,180f ,20.3831f},
+		{25.83535f ,180f ,20.46491f},
+		{28.15282f ,180f ,21.36302f},
+		{28.71365f ,180f ,21.60474f},
+		{33.32626f ,180f ,23.54263f},
+		{38.16153f ,180f ,25.46042f},
+		{44.09297f ,180f ,27.64133f},
+		{50.03224f ,180f ,29.53456f},
+		{55.72046f ,180f ,31.30122f},
+		{56.74839f ,180f ,31.57409f},
+		{60.97566f ,180f ,32.38179f},
+		{63.49662f ,180f ,32.46123f}};*/
+
+        right_arm_rot = new float[,]{
+		{57.57214f ,180f ,32.21281f},
+		{52.08313f ,180f ,32.12613f},
+		{46.78577f ,180f ,32.13498f},
+		{39.99435f ,180f ,31.65063f},
+		{32.41491f ,180f ,30.62084f},
+		{26.38992f ,180f ,29.09164f},
+		{21.29862f ,180f ,27.86041f},
+		{16.58864f ,180f ,26.86143f},
+		{11.1373f ,180f ,25.57901f},
+		{6.76573f ,180f ,25.15792f},
+		{1.34706f ,180f ,25.26723f},
+		{356.8537f ,180f ,25.89669f},
+		{353.27711f ,180f ,26.51312f},
+		{350.58964f ,180f ,26.99464f},
+		{353.38133f ,180f ,26.82447f},
+		{356.67123f ,180f ,26.04845f},
+		{1.93235f ,180f ,25.14944f},
+		{6.09119f ,180f ,23.92899f},
+		{11.33756f ,180f ,22.8073f},
+		{16.66991f ,180f ,21.78493f},
+		{18.71031f ,180f ,20.96805f},
+		{20.64495f ,180f ,20.8245f},
+		{22.44957f ,180f ,20.27422f},
 		{24.5199f ,180f ,20.23809f},
 		{25.55348f ,180f ,20.3831f},
 		{25.83535f ,180f ,20.46491f},
@@ -422,7 +460,7 @@ public class MovePara {
         rot[GenerateBone.SPINE].eulerAngles = new Vector3(spine_rot[step, 0], spine_rot[step, 1], spine_rot[step, 2]);
         rot[GenerateBone.LEFT_ARM].eulerAngles = new Vector3(left_arm_rot[step, 0], left_arm_rot[step, 1], left_arm_rot[step, 2]);
         rot[GenerateBone.RIGHT_ARM].eulerAngles = new Vector3(right_arm_rot[step, 0], right_arm_rot[step, 1], right_arm_rot[step, 2]);
-        //rot[GenerateBone.LEFTFORE_ARM].eulerAngles = new Vector3(leftfore_arm_rot[step, 0], leftfore_arm_rot[step, 1], leftfore_arm_rot[step, 2]);
+        rot[GenerateBone.LEFTFORE_ARM].eulerAngles = new Vector3(leftfore_arm_rot[step, 0], leftfore_arm_rot[step, 1], leftfore_arm_rot[step, 2]);
         rot[GenerateBone.RIGHTFORE_ARM].eulerAngles = new Vector3(rightfore_arm_rot[step, 0], rightfore_arm_rot[step, 1], rightfore_arm_rot[step, 2]);
     }
 }

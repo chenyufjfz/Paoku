@@ -190,7 +190,7 @@ public class GenerateBone {
     
     public static void apply_posture(Vector3 p0, Quaternion[] rot, Transform[] body)
     {
-        body[GenerateBone.HIP].position = p0;
+        body[GenerateBone.HIP].localPosition = p0;
         body[GenerateBone.HIP].localRotation = rot[GenerateBone.HIP];
         body[GenerateBone.RIGHTUP_LEG].localRotation = rot[GenerateBone.RIGHTUP_LEG];
         body[GenerateBone.RIGHT_LEG].localRotation = rot[GenerateBone.RIGHT_LEG];
@@ -204,109 +204,155 @@ public class GenerateBone {
         body[GenerateBone.NECK].localRotation = rot[GenerateBone.NECK];
     }
 
-    public static GameObject generate_bone(Vector3 [] pos, float scale, out Transform[] body)
+    public static GameObject generate_bone(Vector3 [] pos, float scale, out Transform[] body, bool generate_spheer=false)
     {
         body = new Transform[TOTAL_PART];
+        GameObject hip;
 
-        GameObject hip = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        if (generate_spheer)
+            hip = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        else
+            hip = new GameObject();
         body[GenerateBone.HIP] = hip.transform;
         body[GenerateBone.HIP].name = "hip";
         body[GenerateBone.HIP].localPosition = pos[GenerateBone.HIP];
         body[GenerateBone.HIP].localRotation = Quaternion.identity;
         body[GenerateBone.HIP].localScale = new Vector3(scale, scale, scale);
 
-        body[GenerateBone.RIGHTUP_LEG] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        if (generate_spheer)
+            body[GenerateBone.RIGHTUP_LEG] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.RIGHTUP_LEG] = (new GameObject()).transform;
         body[GenerateBone.RIGHTUP_LEG].name = "rightup_leg";
         body[GenerateBone.RIGHTUP_LEG].parent = body[GenerateBone.HIP];
         body[GenerateBone.RIGHTUP_LEG].localPosition = pos[GenerateBone.RIGHTUP_LEG] / scale;
         body[GenerateBone.RIGHTUP_LEG].localRotation = Quaternion.identity;
         body[GenerateBone.RIGHTUP_LEG].localScale = new Vector3(1, 1, 1);
 
-        body[GenerateBone.LEFTUP_LEG] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        if (generate_spheer)
+            body[GenerateBone.LEFTUP_LEG] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.LEFTUP_LEG] = (new GameObject()).transform;
         body[GenerateBone.LEFTUP_LEG].name = "leftup_leg";
         body[GenerateBone.LEFTUP_LEG].parent = body[GenerateBone.HIP];
         body[GenerateBone.LEFTUP_LEG].localPosition = pos[GenerateBone.LEFTUP_LEG] /scale;
         body[GenerateBone.LEFTUP_LEG].localRotation = Quaternion.identity;
         body[GenerateBone.LEFTUP_LEG].localScale = new Vector3(1, 1, 1);
 
-        body[GenerateBone.RIGHT_LEG] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        if (generate_spheer)
+            body[GenerateBone.RIGHT_LEG] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.RIGHT_LEG] = (new GameObject()).transform;
         body[GenerateBone.RIGHT_LEG].name = "right_leg";
         body[GenerateBone.RIGHT_LEG].parent = body[GenerateBone.RIGHTUP_LEG];
         body[GenerateBone.RIGHT_LEG].localPosition = pos[GenerateBone.RIGHT_LEG] / scale;
         body[GenerateBone.RIGHT_LEG].localRotation = Quaternion.identity;
         body[GenerateBone.RIGHT_LEG].localScale = new Vector3(1, 1, 1);
 
-        body[GenerateBone.LEFT_LEG] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        if (generate_spheer)
+            body[GenerateBone.LEFT_LEG] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.LEFT_LEG] = (new GameObject()).transform;
         body[GenerateBone.LEFT_LEG].name = "left_leg";
         body[GenerateBone.LEFT_LEG].parent = body[GenerateBone.LEFTUP_LEG];
         body[GenerateBone.LEFT_LEG].localPosition = pos[GenerateBone.LEFT_LEG] / scale;
         body[GenerateBone.LEFT_LEG].localRotation = Quaternion.identity;
         body[GenerateBone.LEFT_LEG].localScale = new Vector3(1, 1, 1);
 
-        body[GenerateBone.RIGHT_FOOT] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        if (generate_spheer)
+            body[GenerateBone.RIGHT_FOOT] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.RIGHT_FOOT] = (new GameObject()).transform;
         body[GenerateBone.RIGHT_FOOT].name = "right_foot";
         body[GenerateBone.RIGHT_FOOT].parent = body[GenerateBone.RIGHT_LEG];
         body[GenerateBone.RIGHT_FOOT].localPosition = pos[GenerateBone.RIGHT_FOOT] / scale;
         body[GenerateBone.RIGHT_FOOT].localRotation = Quaternion.identity;
         body[GenerateBone.RIGHT_FOOT].localScale = new Vector3(1, 1, 1);
 
-        body[GenerateBone.LEFT_FOOT] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        if (generate_spheer)
+            body[GenerateBone.LEFT_FOOT] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.LEFT_FOOT] = (new GameObject()).transform;
         body[GenerateBone.LEFT_FOOT].name = "left_foot";
         body[GenerateBone.LEFT_FOOT].parent = body[GenerateBone.LEFT_LEG];
         body[GenerateBone.LEFT_FOOT].localPosition = pos[GenerateBone.LEFT_FOOT] / scale;
         body[GenerateBone.LEFT_FOOT].localRotation = Quaternion.identity;
         body[GenerateBone.LEFT_FOOT].localScale = new Vector3(1, 1, 1);
 
-        body[GenerateBone.SPINE] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        if (generate_spheer)
+            body[GenerateBone.SPINE] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.SPINE] = (new GameObject()).transform;
         body[GenerateBone.SPINE].name = "spine";
         body[GenerateBone.SPINE].parent = body[GenerateBone.HIP];
         body[GenerateBone.SPINE].localPosition = pos[GenerateBone.SPINE] / scale;
         body[GenerateBone.SPINE].localRotation = Quaternion.identity;
         body[GenerateBone.SPINE].localScale = new Vector3(1, 1, 1);
 
-        body[GenerateBone.RIGHT_ARM] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        if (generate_spheer)
+            body[GenerateBone.RIGHT_ARM] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.RIGHT_ARM] = (new GameObject()).transform;
         body[GenerateBone.RIGHT_ARM].name = "right_arm";
         body[GenerateBone.RIGHT_ARM].parent = body[GenerateBone.SPINE];
         body[GenerateBone.RIGHT_ARM].localPosition = pos[GenerateBone.RIGHT_ARM] / scale;
         body[GenerateBone.RIGHT_ARM].localRotation = Quaternion.identity;
         body[GenerateBone.RIGHT_ARM].localScale = new Vector3(1, 1, 1);
 
-        body[GenerateBone.LEFT_ARM] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        if (generate_spheer)
+            body[GenerateBone.LEFT_ARM] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.LEFT_ARM] = (new GameObject()).transform;
         body[GenerateBone.LEFT_ARM].name = "left_arm";
         body[GenerateBone.LEFT_ARM].parent = body[GenerateBone.SPINE];
         body[GenerateBone.LEFT_ARM].localPosition = pos[GenerateBone.LEFT_ARM] / scale;
         body[GenerateBone.LEFT_ARM].localRotation = Quaternion.identity;
         body[GenerateBone.LEFT_ARM].localScale = new Vector3(1, 1, 1);
 
-        body[GenerateBone.RIGHTFORE_ARM] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        if (generate_spheer)
+            body[GenerateBone.RIGHTFORE_ARM] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.RIGHTFORE_ARM] = (new GameObject()).transform;
         body[GenerateBone.RIGHTFORE_ARM].name = "rightfore_arm";
         body[GenerateBone.RIGHTFORE_ARM].parent = body[GenerateBone.RIGHT_ARM];
         body[GenerateBone.RIGHTFORE_ARM].localPosition = pos[GenerateBone.RIGHTFORE_ARM] /scale;
         body[GenerateBone.RIGHTFORE_ARM].localRotation = Quaternion.identity;
         body[GenerateBone.RIGHTFORE_ARM].localScale = new Vector3(1, 1, 1);
 
-        body[GenerateBone.LEFTFORE_ARM] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;        
+        if (generate_spheer)
+            body[GenerateBone.LEFTFORE_ARM] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.LEFTFORE_ARM] = (new GameObject()).transform;
         body[GenerateBone.LEFTFORE_ARM].name = "leftfore_arm";
         body[GenerateBone.LEFTFORE_ARM].parent = body[GenerateBone.LEFT_ARM];
         body[GenerateBone.LEFTFORE_ARM].localPosition = pos[GenerateBone.LEFTFORE_ARM] / scale;
         body[GenerateBone.LEFTFORE_ARM].localRotation = Quaternion.identity;
         body[GenerateBone.LEFTFORE_ARM].localScale = new Vector3(1, 1, 1);
 
-        body[GenerateBone.RIGHT_HAND] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        if (generate_spheer)
+            body[GenerateBone.RIGHT_HAND] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.RIGHT_HAND] = (new GameObject()).transform;
         body[GenerateBone.RIGHT_HAND].name = "right_hand";
         body[GenerateBone.RIGHT_HAND].parent = body[GenerateBone.RIGHTFORE_ARM];
         body[GenerateBone.RIGHT_HAND].localPosition = pos[GenerateBone.RIGHT_HAND] / scale;
         body[GenerateBone.RIGHT_HAND].localRotation = Quaternion.identity;
         body[GenerateBone.RIGHT_HAND].localScale = new Vector3(1, 1, 1);
 
-        body[GenerateBone.LEFT_HAND] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        if (generate_spheer)
+            body[GenerateBone.LEFT_HAND] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.LEFT_HAND] = (new GameObject()).transform;
         body[GenerateBone.LEFT_HAND].name = "left_hand";
         body[GenerateBone.LEFT_HAND].parent = body[GenerateBone.LEFTFORE_ARM];
         body[GenerateBone.LEFT_HAND].localPosition = pos[GenerateBone.LEFT_HAND] / scale;
         body[GenerateBone.LEFT_HAND].localRotation = Quaternion.identity;
         body[GenerateBone.LEFT_HAND].localScale = new Vector3(1, 1, 1);
 
-        body[GenerateBone.NECK] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        if (generate_spheer)
+            body[GenerateBone.NECK] = GameObject.CreatePrimitive(PrimitiveType.Sphere).transform;
+        else
+            body[GenerateBone.NECK] = (new GameObject()).transform;
         body[GenerateBone.NECK].name = "neck";
         body[GenerateBone.NECK].parent = body[GenerateBone.SPINE];
         body[GenerateBone.NECK].localPosition = pos[GenerateBone.NECK] / scale;
