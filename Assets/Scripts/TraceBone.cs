@@ -163,7 +163,7 @@ public class TraceBone : MonoBehaviour {
         Vector3[] normal_pos;
         Quaternion[] normal_rot;
         GenerateBone.compute_normal(position, out normal_pos, out normal_rot);
-        GenerateBone.generate_bone(normal_pos, 0.05f, out mirror_body);
+        GenerateBone.generate_bone(normal_pos, 0.05f, out mirror_body, true);
                 
         /*
         GenerateBone.from_to_zx(new Vector3(0, 1, 0), new Vector3(0, 0, 1));
@@ -219,7 +219,7 @@ public class TraceBone : MonoBehaviour {
         Vector3[] normal_pos;
         Quaternion[] normal_rot;
         GenerateBone.compute_normal(position, out normal_pos, out normal_rot);
-        GenerateBone.apply_posture(new Vector3(1, 1, 0), normal_rot, mirror_body);
+        GenerateBone.apply_posture(normal_rot, mirror_body);
 
         if (trace_frame >=10 && trace_frame< 70)
         {

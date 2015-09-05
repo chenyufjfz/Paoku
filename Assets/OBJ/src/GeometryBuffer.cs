@@ -1000,7 +1000,7 @@ public class GeometryBuffer {
             
         
         if (bone_hip != null)        
-            UnityEngine.Object.Destroy(bone_hip);
+            UnityEngine.Object.Destroy(bone_hip.transform.parent.gameObject);
         
     }
 
@@ -1171,8 +1171,8 @@ public class GeometryBuffer {
 #else
                 bone_hip = GenerateBone.generate_bone(normal_pos, 10, out bones, false);
 #endif
-                GenerateBone.apply_posture(normal_pos[GenerateBone.HIP], normal_rot, bones);
-                bones[GenerateBone.HIP].parent = gs[i].transform;
+                GenerateBone.apply_posture(normal_rot, bones, true);
+                bones[GenerateBone.HIP].parent.parent = gs[i].transform;
                 Matrix4x4[] bindPoses = new Matrix4x4[GenerateBone.TOTAL_PART];
                 for (int j = 0; j < GenerateBone.TOTAL_PART; j++)
                     bindPoses[j] = bones[j].worldToLocalMatrix * gs[i].transform.localToWorldMatrix;

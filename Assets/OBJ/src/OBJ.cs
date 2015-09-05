@@ -151,12 +151,16 @@ public class OBJ : MonoBehaviour {
         if (load_state == LoadState.RUNNING)
         {
             move_para.get_next_movement(out rot);
-            rot[GenerateBone.HIP] = buffer.normal_rot[GenerateBone.HIP] * rot[GenerateBone.HIP];
+            //rot[GenerateBone.HIP] = buffer.normal_rot[GenerateBone.HIP] * rot[GenerateBone.HIP];
         }
         else
+        {
             rot = buffer.normal_rot;
+            rot[GenerateBone.HIP] = Quaternion.identity;
+        }
+            
         
-        GenerateBone.apply_posture(buffer.normal_pos[GenerateBone.HIP], rot, bones);
+        GenerateBone.apply_posture(rot, bones);
         
         renderer.bones = bones;
     }
