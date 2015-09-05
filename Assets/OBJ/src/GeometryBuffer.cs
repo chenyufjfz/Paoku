@@ -49,7 +49,7 @@ public class VerticesTopo
     public const NodeIdx INVALID_V = 65535;
     public const int VCONNECT_SIZE = 4;
     public const float HIGHT_KNEE = 0.26f;
-    public const float HIGHT_HAMROOT = 0.473f;
+    public const float HIGHT_HAMROOT = 0.435f;
     public const float HIGHT_ARMROOT = 0.785f;
     public const float HIGHT_NECK = 0.85f;
     public const float LEN_FOREARM = 0.21f;
@@ -593,10 +593,12 @@ public class VerticesTopo
         Vector3 left_leg_normal, right_leg_normal, left_arm_normal, right_arm_normal, neck_normal;
         float left_leg_th, right_leg_th, left_arm_th, right_arm_th, neck_normal_th;
         float right_arm_high, left_arm_high;
+        float leg_slope = 0.6f;
 
         Vector3 vec = joint_pos[GenerateBone.RIGHTUP_LEG] - joint_pos[GenerateBone.LEFTUP_LEG];
         vec.z = 0;
-        right_leg_normal = Vector3.Slerp(vec.normalized, new Vector3(0, 0, -1), 0.7f);
+        right_leg_normal = Vector3.Slerp(vec.normalized, new Vector3(0, 0, -1), leg_slope);
+        right_leg_normal = right_leg_normal.normalized;
         right_leg_th = Vector3.Dot(right_leg_normal, joint_pos[GenerateBone.RIGHTUP_LEG]);
         if (Vector3.Dot(right_leg_normal, joint_pos[GenerateBone.HIP]) < right_leg_th)
         {
@@ -604,7 +606,8 @@ public class VerticesTopo
             right_leg_th = -right_leg_th;
         }
 
-        left_leg_normal = Vector3.Slerp(-(vec.normalized), new Vector3(0, 0, -1), 0.7f);
+        left_leg_normal = Vector3.Slerp(-(vec.normalized), new Vector3(0, 0, -1), leg_slope);
+        left_leg_normal = left_leg_normal.normalized;
         left_leg_th = Vector3.Dot(left_leg_normal, joint_pos[GenerateBone.LEFTUP_LEG]);
         if (Vector3.Dot(left_leg_normal, joint_pos[GenerateBone.HIP]) < left_leg_th)
         {
@@ -612,9 +615,11 @@ public class VerticesTopo
             left_leg_th = -left_leg_th;
         }
 
+        Debug.Log("right normal=" + right_leg_normal + "th=" + right_leg_th +",left normal=" + left_leg_normal +"th="+left_leg_th);
+
         vec = joint_pos[GenerateBone.RIGHT_ARM] - joint_pos[GenerateBone.LEFT_ARM];
         vec.z = 0;
-        right_arm_normal = vec;
+        right_arm_normal = vec.normalized;
         right_arm_th = Vector3.Dot(right_arm_normal, joint_pos[GenerateBone.RIGHT_ARM]);
         if (Vector3.Dot(right_arm_normal, joint_pos[GenerateBone.LEFTFORE_ARM]) < right_arm_th)
         {
@@ -622,7 +627,7 @@ public class VerticesTopo
             right_arm_th = -right_arm_th;
         }
 
-        left_arm_normal = -vec;
+        left_arm_normal = -right_arm_normal;
         left_arm_th = Vector3.Dot(left_arm_normal, joint_pos[GenerateBone.LEFT_ARM]);
         if (Vector3.Dot(left_arm_normal, joint_pos[GenerateBone.RIGHTFORE_ARM]) < left_arm_th)
         {
@@ -677,30 +682,52 @@ public class VerticesTopo
                             }
                         }
                         else
-                        {
-                            bool rcheck = (Vector3.Dot(right_leg_normal, v[vi]) > right_leg_th);
-                            bool lcheck = (Vector3.Dot(left_leg_normal, v[vi]) > left_leg_th);
-                            if (rcheck && lcheck)
-                                weights[vp].boneIndex0 = GenerateBone.HIP;
-                            if (!rcheck && lcheck)
-                                weights[vp].boneIndex0 = GenerateBone.RIGHTUP_LEG;
-                            if (rcheck && !lcheck)
-                                weights[vp].boneIndex0 = GenerateBone.LEFTUP_LEG;
-                            if (!rcheck && !lcheck)
+                        {                   
+                            float rcheck = Vector3.Dot(right_leg_normal, v[vi]) - right_leg_th;
+                            float lcheck = Vector3.Dot(left_leg_normal, v[vi]) - left_leg_th;
+                            float rdistance = Vector3.Distance(v[vi], joint_pos[GenerateBone.RIGHTUP_LEG]);
+                            float ldistance = Vector3.Distance(v[vi], joint_pos[GenerateBone.LEFTUP_LEG]);
+                            float hdistance = joint_pos[GenerateBone.HIP].z - high;
+                            if (rcheck > 0 && lcheck > 0)
                             {
-                                weights[vp].weight0 = 0.5f;
-                                weights[vp].weight1 = 0.5f;
-                                weights[vp].boneIndex0 = GenerateBone.RIGHTUP_LEG;
-                                weights[vp].boneIndex1 = GenerateBone.LEFTUP_LEG;
+                                if (rdistance > ldistance)
+                                {
+                                    float w0 = lcheck;
+                                    float w1 = rdistance - ldistance;
+                                    float w2 = hdistance;
+                                    weights[vp].weight0 = w1 * w2 / (w0 * w1 + w0 * w2 + w1 * w2);                           
+                                    weights[vp].boneIndex0 = GenerateBone.LEFTUP_LEG;
+                                }
+                                else
+                                {
+                                    float w0 = rcheck;
+                                    float w1 = ldistance - rdistance;
+                                    float w2 = hdistance;
+                                    weights[vp].weight0 = w1 * w2 / (w0 * w1 + w0 * w2 + w1 * w2);  
+                                    weights[vp].boneIndex0 = GenerateBone.RIGHTUP_LEG;
+                                }
+                                if (weights[vp].weight0 >= 1.0)
+                                    weights[vp].weight0 = 1.0f;
+                                weights[vp].weight1 = 1.0f - weights[vp].weight0;
+                                weights[vp].boneIndex1 = GenerateBone.HIP;
                             }
+                            else
+                            {
+                                if (rdistance > ldistance) 
+                                    weights[vp].boneIndex0 = GenerateBone.LEFTUP_LEG;                                          
+                                else
+                                    weights[vp].boneIndex0 = GenerateBone.RIGHTUP_LEG;
+                            }                         
                         }
                     }
                     else
                     {
                         if (high < joint_pos[GenerateBone.SPINE].z)
                         {
-                            weights[vp].weight0 = 0.5f;
-                            weights[vp].weight1 = 0.5f;
+                            float w0 = joint_pos[GenerateBone.SPINE].z - high;
+                            float w1 = high - joint_pos[GenerateBone.HIP].z;
+                            weights[vp].weight0 = w1 / (w0 + w1);
+                            weights[vp].weight1 = 1 - weights[vp].weight0;
                             weights[vp].boneIndex0 = GenerateBone.HIP;
                             weights[vp].boneIndex1 = GenerateBone.SPINE;
                         }
@@ -710,13 +737,34 @@ public class VerticesTopo
                                 weights[vp].boneIndex0 = GenerateBone.NECK;
                             else
                             {
-                                if (Vector3.Dot(right_arm_normal, v[vi]) < right_arm_th && v[vi].z > right_arm_high)
-                                    weights[vp].boneIndex0 = GenerateBone.RIGHT_ARM;
+                                float w0 = right_arm_th - Vector3.Dot(right_arm_normal, v[vi]);
+                                float w1 = v[vi].z - right_arm_high;
+                                if (w0 > 0 && w1 > 0)
+                                {
+                                    weights[vp].weight0 = w1 / (6 * w0);
+                                    if (weights[vp].weight0 >= 1)
+                                        weights[vp].weight0 = 1;
+                                    weights[vp].weight1 = 1 - weights[vp].weight0;
+                                    weights[vp].boneIndex0 = GenerateBone.SPINE;
+                                    weights[vp].boneIndex1 = GenerateBone.RIGHT_ARM;
+                                }                                    
                                 else
-                                    if (Vector3.Dot(left_arm_normal, v[vi]) < left_arm_th && v[vi].z > left_arm_high)
-                                        weights[vp].boneIndex0 = GenerateBone.LEFT_ARM;
+                                {
+                                    w0 = left_arm_th - Vector3.Dot(left_arm_normal, v[vi]);
+                                    w1 = v[vi].z - left_arm_high;
+                                    if (w0 > 0 && w1 > 0)
+                                    {
+                                        weights[vp].weight0 = w1 / (6 * w0);
+                                        if (weights[vp].weight0 >= 1)
+                                            weights[vp].weight0 = 1;
+                                        weights[vp].weight1 = 1 - weights[vp].weight0;
+                                        weights[vp].boneIndex0 = GenerateBone.SPINE;
+                                        weights[vp].boneIndex1 = GenerateBone.LEFT_ARM;
+                                    }                                        
                                     else
                                         weights[vp].boneIndex0 = GenerateBone.SPINE;
+                                }
+                                    
                             }
                         }
                     }
@@ -1114,7 +1162,8 @@ public class GeometryBuffer {
                       
                 Transform[] bones;
                 BoneWeight[] weights;
-                vtopo.build_body(out weights);
+                int ret = vtopo.build_body(out weights);
+                Debug.Log("build body return" + ret);
                 m.boneWeights = weights;
                 GenerateBone.compute_normal(vtopo.joint_pos, out normal_pos, out normal_rot);
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN

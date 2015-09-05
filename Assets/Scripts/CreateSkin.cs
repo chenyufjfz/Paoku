@@ -45,15 +45,21 @@ public class CreateSkin : MonoBehaviour {
         renderer.bones = bones;
         renderer.sharedMesh = mesh;
         AnimationCurve curve = new AnimationCurve();
-        curve.keys = new Keyframe[] { new Keyframe(0, 0, 0, 0), new Keyframe(1, 3, 0, 0), new Keyframe(2, 0.0F, 0, 0) };
+        curve.keys = new Keyframe[] { new Keyframe(0, 0), new Keyframe(1, 3), new Keyframe(2, 0.0F) };
         AnimationClip clip = new AnimationClip();
-        clip.SetCurve("Lower", typeof(Transform), "m_LocalPosition.z", curve);
+        clip.SetCurve("Lower", typeof(Transform), "m_LocalPosition.y", curve);
+        AnimationCurve curve1 = new AnimationCurve();
+        curve1.keys = new Keyframe[] { new Keyframe(0, 5), new Keyframe(1, 3), new Keyframe(2, 5F) };
+        clip.SetCurve("Upper", typeof(Transform), "m_LocalPosition.y", curve1);
+        clip.wrapMode = WrapMode.Loop;
         animation.AddClip(clip, "test");
         animation.Play("test");
+        
     }
     
     void Update()
     {
+        /*
         if (Time.time > Mathf.PI)
         {
             SkinnedMeshRenderer renderer = GetComponent<SkinnedMeshRenderer>();
@@ -62,6 +68,6 @@ public class CreateSkin : MonoBehaviour {
             bones[1].localRotation = new Quaternion(0, Mathf.Sin(Time.time), 0, Mathf.Cos(Time.time));
             bones[1].localRotation = bones[1].localRotation * bone1_ratation;
             renderer.bones = bones;
-        }
+        }*/
     }
 }

@@ -8,6 +8,7 @@ public class CameraMove3D : MonoBehaviour
 {
     public float MaxDistance = 3;
     public float MinDistance = 1;
+    public int FrameRate = 15;
     public float scale = 100;
     public float up = 0;
     protected float sizex, sizey, sizez, size;
@@ -17,6 +18,7 @@ public class CameraMove3D : MonoBehaviour
     private Socket clientSocket;
     void Start()
     {
+        Application.targetFrameRate = FrameRate;
         clientSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         OBJ model = GameObject.Find("model").GetComponent<OBJ>();
         try
@@ -111,10 +113,10 @@ public class CameraMove3D : MonoBehaviour
     {
         string s;
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        s ="Load file://" + Application.streamingAssetsPath + "/model.obj\n";
+        s ="Load file://" + Application.streamingAssetsPath + "/model3.obj\n";
 #else
 #if UNITY_ANDROID
-        s = "Load " + Application.streamingAssetsPath + "/model.obj\n";
+        s = "Load " + Application.streamingAssetsPath + "/model3.obj\n";
 #endif
 #endif
         clientSocket.Send(System.Text.Encoding.ASCII.GetBytes(s));
