@@ -46,14 +46,11 @@ public class CameraMove3D : MonoBehaviour
         size = sizex;
         size = Mathf.Max(size, sizey);
         size = Mathf.Max(size, sizez);
-        if (size == sizex)
-            model.transform.eulerAngles = new Vector3(0, 0, 90);
-        if (size == sizez)
-            model.transform.eulerAngles = new Vector3(270, 0, 0);
+        
         size = size / 1.5f;
         distance = 2 * size;
         beta = 0;
-        alpha = 0;
+        alpha = Mathf.PI/2;
         transform.position = new Vector3(distance * Mathf.Cos(beta) * Mathf.Cos(alpha),
                distance * Mathf.Sin(beta), distance * Mathf.Cos(beta) * Mathf.Sin(alpha));
         transform.LookAt(new Vector3(0, up, 0));

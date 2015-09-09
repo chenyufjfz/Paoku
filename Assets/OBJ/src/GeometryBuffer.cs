@@ -1,9 +1,11 @@
+#define STANDALONE_DEBUG
 using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
+#if STANDALONE_DEBUG
 using Vectrosity;
-
+#endif
 using NodeIdx = System.UInt16;
 public struct FaceIndices
 {
@@ -38,7 +40,9 @@ public struct Part
     public float [] ymax, ymax_pp;
     public Vector3[] center;
     public NodeIdx[] layer_head;
+#if STANDALONE_DEBUG
     public VectorLine center_line;
+#endif
 }
 
 public class VerticesTopo
@@ -863,6 +867,7 @@ public class VerticesTopo
         parent.transform.eulerAngles = new Vector3(270, 0, 0);
         parent.transform.localScale = new Vector3(1, 1, 1);
 
+#if STANDALONE_DEBUG
         for (int i = 0; i < 4; i++)
         {
             line.Clear();
@@ -873,6 +878,7 @@ public class VerticesTopo
             part[i].center_line.drawTransform = parent.transform;
             part[i].center_line.Draw3D();
         }
+#endif
 
         float scale = total_high / 50;
         GameObject joint = new GameObject("joint");
@@ -994,8 +1000,10 @@ public class GeometryBuffer {
         if (joints != null)
         {
             UnityEngine.Object.Destroy(joints);
+#if STANDALONE_DEBUG
             for (int i = 0; i < 4; i++)
                 VectorLine.Destroy(ref vtopo.part[i].center_line);
+#endif
         } 
             
         
@@ -1171,7 +1179,7 @@ public class GeometryBuffer {
 #else
                 bone_hip = GenerateBone.generate_bone(normal_pos, 10, out bones, false);
 #endif
-                GenerateBone.apply_posture(normal_rot, bones, true);
+                GenerateBone.apply_posture(normal_rot, bones);
                 bones[GenerateBone.HIP].parent.parent = gs[i].transform;
                 Matrix4x4[] bindPoses = new Matrix4x4[GenerateBone.TOTAL_PART];
                 for (int j = 0; j < GenerateBone.TOTAL_PART; j++)
@@ -1179,6 +1187,7 @@ public class GeometryBuffer {
                 m.bindposes = bindPoses;
                 (gs[i].renderer as SkinnedMeshRenderer).sharedMesh = m;                
                 (gs[i].renderer as SkinnedMeshRenderer).bones = bones;
+                //bones[GenerateBone.HIP].parent.eulerAngles = new Vector3(0, 0, 0);
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
                 System.IO.StreamWriter sw = new System.IO.StreamWriter("Normal.txt");
                 for (int j = 0; j < GenerateBone.TOTAL_PART; j++)

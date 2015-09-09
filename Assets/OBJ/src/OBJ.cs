@@ -1,3 +1,4 @@
+#define STANDALONE_DEBUG
 using UnityEngine;
 using System;
 using System.Collections;
@@ -10,14 +11,14 @@ using System.Net;
 
 public class OBJ : MonoBehaviour {
 	
-    public Text text;
+    public Text text = null;
     public int myPort = 3850;
-    private Socket serverSocket;
-    private List<Socket> clientSocket;
-    private byte[] request = new byte[2048];
-    public bool show_envelop, show_joint, show_body;
+    protected Socket serverSocket;
+    protected List<Socket> clientSocket;
+    protected byte[] request = new byte[2048];
+    protected bool show_envelop, show_joint, show_body;
     /*socket command*/
-    private const string LOAD = "Load";
+    protected const string LOAD = "Load";
 
 	/* OBJ file tags */
 	private const string O 	= "o";
@@ -41,7 +42,7 @@ public class OBJ : MonoBehaviour {
 	private const string MAP_KD = "map_Kd"; // Diffuse texture (other textures are not supported)
 
 	private string mtllib;
-	private GeometryBuffer buffer;
+    protected GeometryBuffer buffer;
     protected MovePara move_para;
 
     public enum LoadState {
@@ -192,7 +193,9 @@ public class OBJ : MonoBehaviour {
             Debug.LogWarning("drop command" + path);
             return;
         }
-            
+
+        if (load_state == LoadState.RUNNING)
+            start_stop_run();
         load_state = LoadState.LOADOBJ;
         StartCoroutine(Load(path));        
     }
@@ -232,15 +235,19 @@ public class OBJ : MonoBehaviour {
         buffer = new GeometryBuffer();
         mtllib = null;
 		string basepath = (path.IndexOf("/") == -1) ? "" : path.Substring(0, path.LastIndexOf("/") + 1);
-        text.enabled = true;
-        text.text = "loading " + path;
+        if (text != null)
+        {
+            text.enabled = true;
+            text.text = "loading " + path;
+        }        
         Debug.Log(DateTime.Now.Second + "." + DateTime.Now.Millisecond + "paoku load " + path);
         WWW loader = new WWW(path);        
         yield return loader;
 
         if (loader.error != null)
         {
-            text.text = loader.error;
+            if (text!=null)
+                text.text = loader.error;
             yield break;
         }
             
@@ -250,7 +257,8 @@ public class OBJ : MonoBehaviour {
 		if(hasMaterials) {
             if (mtllib.StartsWith("./"))
                 mtllib = mtllib.Substring(2);
-            text.text = "loading " + basepath + mtllib;
+            if (text != null)
+                text.text = "loading " + basepath + mtllib;
             Debug.Log("paoku load " + basepath + mtllib);
             loader = new WWW(basepath + mtllib);
             yield return loader;
@@ -264,7 +272,8 @@ public class OBJ : MonoBehaviour {
 			
 			foreach(MaterialData m in materialData) {
 				if(m.diffuseTexPath != null) {
-                    text.text = "loading " + basepath + m.diffuseTexPath;
+                    if (text!=null)
+                        text.text = "loading " + basepath + m.diffuseTexPath;
                     Debug.Log("paoku load " + basepath + m.diffuseTexPath);
 					WWW texloader = new WWW(basepath + m.diffuseTexPath);
 					yield return texloader;
@@ -277,13 +286,16 @@ public class OBJ : MonoBehaviour {
 				}
 			}
 		}
-        text.enabled = false;		
+        if (text!=null)
+            text.enabled = false;		
         
 		Build();
         renderer.enabled = true;
+        
+#if STANDALONE_DEBUG
         CameraMove3D c3d = GameObject.Find("Main Camera").GetComponent("CameraMove3D") as CameraMove3D;
         c3d.StartObserve();
-        
+#endif
         load_state = LoadState.IDLE;
 	}
 
