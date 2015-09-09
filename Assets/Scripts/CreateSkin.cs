@@ -5,7 +5,7 @@ public class CreateSkin : MonoBehaviour {
 
 	// Use this for initialization
     Quaternion bone0_ratation, bone1_ratation;
-
+    public float Playspeed = 1.0f;
     void Start()
     {
         gameObject.AddComponent<Animation>();
@@ -69,5 +69,6 @@ public class CreateSkin : MonoBehaviour {
             bones[1].localRotation = bones[1].localRotation * bone1_ratation;
             renderer.bones = bones;
         }*/
+        animation["test"].speed = Playspeed;
     }
 }

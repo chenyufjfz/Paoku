@@ -78,6 +78,8 @@ public class OBJ : MonoBehaviour {
         show_joint = false;
         show_body = true;
 
+        gameObject.AddComponent<Animation>();
+        animation.AddClip(move_para.create_running(), "run");
 	}
 
     void Update()
@@ -146,23 +148,31 @@ public class OBJ : MonoBehaviour {
         SkinnedMeshRenderer renderer = GetComponent<SkinnedMeshRenderer>();
         if (load_state == LoadState.LOADOBJ || renderer.bones == null || renderer.bones.Length==0)
             return;
-        Transform[] bones = renderer.bones;
-        Quaternion[] rot;
+        
         if (load_state == LoadState.RUNNING)
-        {
+        {  
+#if false
+            Transform[] bones = renderer.bones;
+            Quaternion[] rot;
             move_para.get_next_movement(out rot);
-            //rot[GenerateBone.HIP] = buffer.normal_rot[GenerateBone.HIP] * rot[GenerateBone.HIP];
+            GenerateBone.apply_posture(rot, bones);
+
+            renderer.bones = bones;
+#endif
         }
         else
         {
+            Transform[] bones = renderer.bones;
+            Quaternion[] rot;
             rot = buffer.normal_rot;
             rot[GenerateBone.HIP] = Quaternion.identity;
+            GenerateBone.apply_posture(rot, bones);
+
+            renderer.bones = bones;
         }
             
         
-        GenerateBone.apply_posture(rot, bones);
         
-        renderer.bones = bones;
     }
 
     void OnDestroy()
@@ -447,11 +457,19 @@ public class OBJ : MonoBehaviour {
     
     public void start_stop_run()
     {
-        if (load_state == LoadState.IDLE)
+        if (load_state == LoadState.IDLE) 
+        {
             load_state = LoadState.RUNNING;
+            animation.Play("run");
+            animation["run"].speed = 1f;
+        }            
         else
         if (load_state == LoadState.RUNNING)
+        {
             load_state = LoadState.IDLE;
+            animation.Stop();
+        }
+            
     }
 }
 

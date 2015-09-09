@@ -8,7 +8,7 @@ public class CameraMove3D : MonoBehaviour
 {
     public float MaxDistance = 3;
     public float MinDistance = 1;
-    public int FrameRate = 15;
+    public int FrameRate = 30;
     public float scale = 100;
     public float up = 0;
     protected float sizex, sizey, sizez, size;

@@ -38,6 +38,23 @@ public class GenerateBone {
         "right_hand",
         "left_hand"
     };
+    public static readonly string[] RelativeBoneName = new string[] {
+        "body_base/hip",
+        "body_base/hip/rightup_leg",
+        "body_base/hip/leftup_leg",
+        "body_base/hip/rightup_leg/right_leg",
+        "body_base/hip/leftup_leg/left_leg",
+        "body_base/hip/spine",
+        "body_base/hip/spine/right_arm",
+        "body_base/hip/spine/left_arm",
+        "body_base/hip/spine/right_arm/rightfore_arm",
+        "body_base/hip/spine/left_arm/leftfore_arm",
+        "body_base/hip/spine/neck",
+        "right_foot",
+        "left_foot",
+        "right_hand",
+        "left_hand"
+    };
     public static Quaternion from_to(Vector3 f0, Vector3 f1, Vector3 t0, Vector3 t1)
     {
         Quaternion r0 = Quaternion.FromToRotation(f0, t0);

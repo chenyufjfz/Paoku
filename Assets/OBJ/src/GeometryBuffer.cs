@@ -741,12 +741,12 @@ public class VerticesTopo
                                 float w1 = v[vi].z - right_arm_high;
                                 if (w0 > 0 && w1 > 0)
                                 {
-                                    weights[vp].weight0 = w1 / (6 * w0);
-                                    if (weights[vp].weight0 >= 1)
-                                        weights[vp].weight0 = 1;
-                                    weights[vp].weight1 = 1 - weights[vp].weight0;
-                                    weights[vp].boneIndex0 = GenerateBone.SPINE;
-                                    weights[vp].boneIndex1 = GenerateBone.RIGHT_ARM;
+                                    weights[vp].weight1 = w1 / (6 * w0);
+                                    if (weights[vp].weight1 >= 1)
+                                        weights[vp].weight1 = 1;
+                                    weights[vp].weight0 = 1 - weights[vp].weight1;
+                                    weights[vp].boneIndex0 = GenerateBone.RIGHT_ARM;
+                                    weights[vp].boneIndex1 = GenerateBone.SPINE;
                                 }                                    
                                 else
                                 {
@@ -1119,7 +1119,7 @@ public class GeometryBuffer {
             }
     
             Debug.Log("VCount=" + vertices.Count + ",Vpair=" + tvertices.Length + ",VpairCap=" + vtopo.vpair_cap +",Tris=" + od.allFaces.Count);
-            Mesh m = new Mesh(); ;
+            Mesh m = new Mesh();
             m.normals = null;
             m.uv = null;
             m.triangles = null;

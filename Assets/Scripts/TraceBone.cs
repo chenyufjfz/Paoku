@@ -164,7 +164,7 @@ public class TraceBone : MonoBehaviour {
         Quaternion[] normal_rot;
         GenerateBone.compute_normal(position, out normal_pos, out normal_rot);
         GenerateBone.generate_bone(normal_pos, 0.05f, out mirror_body, true);
-                
+        mirror_body[GenerateBone.HIP].parent.position = new Vector3(1, 1, 0);
         /*
         GenerateBone.from_to_zx(new Vector3(0, 1, 0), new Vector3(0, 0, 1));
         for (int i = 0; i < 1000; i++)
@@ -221,7 +221,7 @@ public class TraceBone : MonoBehaviour {
         GenerateBone.compute_normal(position, out normal_pos, out normal_rot);
         GenerateBone.apply_posture(normal_rot, mirror_body);
 
-        if (trace_frame >=10 && trace_frame< 70)
+        if (trace_frame >=30 && trace_frame< 100)
         {
             hip_trace.Add(new Pose(normal_pos[GenerateBone.HIP], normal_rot[GenerateBone.HIP]));
             rightup_leg_trace.Add(new Pose(normal_pos[GenerateBone.RIGHTUP_LEG], normal_rot[GenerateBone.RIGHTUP_LEG]));
@@ -252,10 +252,21 @@ public class TraceBone : MonoBehaviour {
     void write_para(StreamWriter sw, List<Pose> trace)
     {
         sw.Write("{\n");
-        for(int i=0; i<36; i++) 
+        int NUM = 36;
+        for(int i=0; i<NUM; i++) 
         {
-            sw.Write("\t\t{" + trace[i].rotate.eulerAngles.x + "f ," + trace[i].rotate.eulerAngles.y + "f ," + trace[i].rotate.eulerAngles.z + "f}");
-            if (i == 35)
+            float w, x, y, z;
+            w = trace[i].rotate.w;
+            x = trace[i].rotate.x;
+            y = trace[i].rotate.y;
+            z = trace[i].rotate.z;
+            
+            x = (trace[i].rotate.eulerAngles.x >= 250) ? trace[i].rotate.eulerAngles.x - 360 : trace[i].rotate.eulerAngles.x;
+            y = (trace[i].rotate.eulerAngles.y >= 250) ? trace[i].rotate.eulerAngles.y - 360 : trace[i].rotate.eulerAngles.y;
+            z = (trace[i].rotate.eulerAngles.z >= 250) ? trace[i].rotate.eulerAngles.z - 360 : trace[i].rotate.eulerAngles.z;
+            
+            sw.Write("\t\t{" + x + "f, " + y + "f, " + z + "f}");
+            if (i == NUM - 1)
                 sw.Write("};\n");
             else
                 sw.Write(",\n");
@@ -266,27 +277,27 @@ public class TraceBone : MonoBehaviour {
     void OnDestroy()
     {
         StreamWriter sw = new StreamWriter("trace.txt");
-        sw.Write("hip_trace\n");
+        sw.Write("hip_trace_run\n");
         write_trace(sw, hip_trace);
-        sw.Write("\nleftup_leg_trace\n");
+        sw.Write("\nleftup_leg_trace_run\n");
         write_trace(sw, leftup_leg_trace);
-        sw.Write("\nleft_leg_trace\n");
+        sw.Write("\nleft_leg_trace_run\n");
         write_trace(sw, left_leg_trace);
-        sw.Write("\nrightup_leg_trace\n");
+        sw.Write("\nrightup_leg_trace_run\n");
         write_trace(sw, rightup_leg_trace);
-        sw.Write("\nright_leg_trace\n");
+        sw.Write("\nright_leg_trace_run\n");
         write_trace(sw, right_leg_trace);
-        sw.Write("\nspine\n");
+        sw.Write("\nspine_run\n");
         write_trace(sw, spine_trace);
-        sw.Write("\nleft_arm_trace\n");
+        sw.Write("\nleft_arm_trace_run\n");
         write_trace(sw, left_arm_trace);
-        sw.Write("\nleftfore_arm_trace\n");
+        sw.Write("\nleftfore_arm_trace_run\n");
         write_trace(sw, leftfore_arm_trace);
-        sw.Write("\nright_arm_trace\n");
+        sw.Write("\nright_arm_trace_run\n");
         write_trace(sw, right_arm_trace);
-        sw.Write("\nrightfore_arm_trace\n");
+        sw.Write("\nrightfore_arm_trace_run\n");
         write_trace(sw, rightfore_arm_trace);
-        sw.Write("\nneck_trace\n");
+        sw.Write("\nneck_trace_run\n");
         write_trace(sw, neck_trace);
         sw.Close();
 
@@ -302,25 +313,25 @@ public class TraceBone : MonoBehaviour {
         sw.Write("protected float [,] leftfore_arm_rot;\n");
         sw.Write("protected float [,] rightfore_arm_rot;\n");
 
-        sw.Write("\thip_rot = new float [,]");
+        sw.Write("\thip_rot_run = new float [,]");
         write_para(sw, hip_trace);
-        sw.Write("\n\n\tleftup_leg_rot = new float [,]");
+        sw.Write("\n\n\tleftup_leg_rot_run = new float [,]");
         write_para(sw, leftup_leg_trace);
-        sw.Write("\n\n\trightup_leg_rot = new float [,]");
+        sw.Write("\n\n\trightup_leg_rot_run = new float [,]");
         write_para(sw, rightup_leg_trace);
-        sw.Write("\n\n\tleft_leg_rot = new float [,]");
+        sw.Write("\n\n\tleft_leg_rot_run = new float [,]");
         write_para(sw, left_leg_trace);
-        sw.Write("\n\n\tright_leg_rot = new float [,]");
+        sw.Write("\n\n\tright_leg_rot_run = new float [,]");
         write_para(sw, right_leg_trace);
-        sw.Write("\n\n\tspine_rot = new float [,]");
+        sw.Write("\n\n\tspine_rot_run = new float [,]");
         write_para(sw, spine_trace);
-        sw.Write("\n\n\tleft_arm_rot = new float [,]");
+        sw.Write("\n\n\tleft_arm_rot_run = new float [,]");
         write_para(sw, left_arm_trace);
-        sw.Write("\n\n\tright_arm_rot = new float [,]");
+        sw.Write("\n\n\tright_arm_rot_run = new float [,]");
         write_para(sw, right_arm_trace);
-        sw.Write("\n\n\tleftfore_arm_rot = new float [,]");
+        sw.Write("\n\n\tleftfore_arm_rot_run = new float [,]");
         write_para(sw, leftfore_arm_trace);
-        sw.Write("\n\n\trightfore_arm_rot = new float [,]");
+        sw.Write("\n\n\trightfore_arm_rot_run = new float [,]");
         write_para(sw, rightfore_arm_trace);        
         sw.Close();
     }
