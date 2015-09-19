@@ -11,7 +11,7 @@ public class CameraMove3D : MonoBehaviour
     public int FrameRate = 30;
     public float scale = 100;
     public float up = 0;
-    protected float sizex, sizey, sizez, size;
+    protected float size;
     protected Vector3 old_mouse_pos;
     public float distance, alpha, beta;
 
@@ -40,12 +40,7 @@ public class CameraMove3D : MonoBehaviour
         SkinnedMeshRenderer mf = model.GetComponent(typeof(SkinnedMeshRenderer)) as SkinnedMeshRenderer;
         if (mf == null)
             Debug.Log("wrong");
-        sizex = mf.sharedMesh.bounds.size.x;
-        sizey = mf.sharedMesh.bounds.size.y;
-        sizez = mf.sharedMesh.bounds.size.z;
-        size = sizex;
-        size = Mathf.Max(size, sizey);
-        size = Mathf.Max(size, sizez);
+        size = MovePara.normalHeight;
         
         size = size / 1.5f;
         distance = 2 * size;

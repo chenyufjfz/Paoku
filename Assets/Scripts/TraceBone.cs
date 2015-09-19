@@ -49,6 +49,7 @@ public class TraceBone : MonoBehaviour {
     Transform right_hand;
     Transform neck;
     Transform[] mirror_body;
+    List<Vector3> root_motion_trace;
     List<Pose> hip_trace;
     List<Pose> leftup_leg_trace;
     List<Pose> left_leg_trace;
@@ -62,7 +63,13 @@ public class TraceBone : MonoBehaviour {
     List<Pose> neck_trace;
     int trace_frame;
     float height;
-
+    Animator anim;
+    enum TraceBehavior{
+        TraceRun,
+        TraceJump,
+        TraceRoll
+    };
+    TraceBehavior trace_behavior = TraceBehavior.TraceRoll;
     Transform GetTransform(Transform check, string name)
     {
         foreach (Transform t in check.GetComponentsInChildren<Transform>())
@@ -95,9 +102,10 @@ public class TraceBone : MonoBehaviour {
         right_arm = GetTransform(right_shoulder, "char_robotGuard_RightArm");
         rightfore_arm = GetTransform(right_arm, "char_robotGuard_RightForeArm");
         left_hand = GetTransform(leftfore_arm, "char_robotGuard_LeftHand");
-        right_hand = GetTransform(rightfore_arm, "char_robotGuard_RightHand"); 
+        right_hand = GetTransform(rightfore_arm, "char_robotGuard_RightHand");
         neck = GetTransform(spine, "char_robotGuard_Neck");
-
+        anim = GetComponent<Animator>();     
+        
         if (hip == null)
             Debug.Log("hip not found");
         if (leftup_leg==null || left_leg==null)
@@ -129,7 +137,7 @@ public class TraceBone : MonoBehaviour {
         right_arm_trace = new List<Pose>();
         rightfore_arm_trace = new List<Pose>();
         neck_trace = new List<Pose>();
-
+        root_motion_trace = new List<Vector3>();
         float err = 0;
         err += Vector3.Magnitude(hip.rotation * leftup_leg.localPosition + hip.position - leftup_leg.position);        
         err += Vector3.Magnitude(hip.rotation * leftup_leg.localPosition + (hip.localRotation *leftup_leg.localRotation)*left_leg.localPosition + hip.position - left_leg.position);
@@ -220,9 +228,12 @@ public class TraceBone : MonoBehaviour {
         Quaternion[] normal_rot;
         GenerateBone.compute_normal(position, out normal_pos, out normal_rot);
         GenerateBone.apply_posture(normal_rot, mirror_body);
-
-        if (trace_frame >=30 && trace_frame< 100)
+        
+        if (anim.GetCurrentAnimatorStateInfo(0).nameHash == Animator.StringToHash("Base Layer.Jump") && trace_behavior == TraceBehavior.TraceJump ||
+            anim.GetCurrentAnimatorStateInfo(0).nameHash == Animator.StringToHash("Base Layer.Run") && trace_behavior == TraceBehavior.TraceRun ||
+            anim.GetCurrentAnimatorStateInfo(0).nameHash == Animator.StringToHash("Base Layer.Roll") && trace_behavior == TraceBehavior.TraceRoll)
         {
+            root_motion_trace.Add(position[GenerateBone.HIP]);
             hip_trace.Add(new Pose(normal_pos[GenerateBone.HIP], normal_rot[GenerateBone.HIP]));
             rightup_leg_trace.Add(new Pose(normal_pos[GenerateBone.RIGHTUP_LEG], normal_rot[GenerateBone.RIGHTUP_LEG]));
             leftup_leg_trace.Add(new Pose(normal_pos[GenerateBone.LEFTUP_LEG], normal_rot[GenerateBone.LEFTUP_LEG]));
@@ -234,8 +245,7 @@ public class TraceBone : MonoBehaviour {
             rightfore_arm_trace.Add(new Pose(normal_pos[GenerateBone.RIGHTFORE_ARM], normal_rot[GenerateBone.RIGHTFORE_ARM]));
             left_arm_trace.Add(new Pose(normal_pos[GenerateBone.LEFT_ARM], normal_rot[GenerateBone.LEFT_ARM]));
             leftfore_arm_trace.Add(new Pose(normal_pos[GenerateBone.LEFTFORE_ARM], normal_rot[GenerateBone.LEFTFORE_ARM]));
-            neck_trace.Add(new Pose(normal_pos[GenerateBone.NECK], normal_rot[GenerateBone.NECK]));
-            
+            neck_trace.Add(new Pose(normal_pos[GenerateBone.NECK], normal_rot[GenerateBone.NECK]));            
         }
                 
 	}
@@ -252,7 +262,7 @@ public class TraceBone : MonoBehaviour {
     void write_para(StreamWriter sw, List<Pose> trace)
     {
         sw.Write("{\n");
-        int NUM = 36;
+        int NUM = (trace_behavior == TraceBehavior.TraceRun) ? 36 : trace.Count;
         for(int i=0; i<NUM; i++) 
         {
             float w, x, y, z;
@@ -270,10 +280,26 @@ public class TraceBone : MonoBehaviour {
                 sw.Write("};\n");
             else
                 sw.Write(",\n");
-        }
-        
+        }        
     }
 
+    void write_para2(StreamWriter sw, List<Vector3> trace)
+    {
+        sw.Write("{\n");
+        int NUM = trace.Count;
+        for (int i=0; i<NUM; i++)
+        {
+            float x, y, z;
+            x = (trace[i].x - trace[NUM-1].x) * MovePara.normalHeight * 0.55f;
+            y = (trace[i].y - trace[NUM - 1].y) * MovePara.normalHeight * 0.55f;
+            z = (trace[i].z - trace[NUM - 1].z) * MovePara.normalHeight * 0.55f;
+            sw.Write("\t\t{" + x + "f, " + y + "f, " + z + "f}");
+            if (i == NUM - 1)
+                sw.Write("};\n");
+            else
+                sw.Write(",\n");
+        }
+    }
     void OnDestroy()
     {
         StreamWriter sw = new StreamWriter("trace.txt");
@@ -302,37 +328,93 @@ public class TraceBone : MonoBehaviour {
         sw.Close();
 
         sw = new StreamWriter("MovePara.txt");
-        sw.Write("protected float [,] hip_rot;\n");
-        sw.Write("protected float [,] leftup_leg_rot;\n");
-        sw.Write("protected float [,] rightup_leg_rot;\n");
-        sw.Write("protected float [,] left_leg_rot;\n");
-        sw.Write("protected float [,] right_leg_rot;\n");
-        sw.Write("protected float [,] spine_rot;\n");
-        sw.Write("protected float [,] left_arm_rot;\n");
-        sw.Write("protected float [,] right_arm_rot;\n");
-        sw.Write("protected float [,] leftfore_arm_rot;\n");
-        sw.Write("protected float [,] rightfore_arm_rot;\n");
+        string hip_name = "hip_rot_";
+        string leftup_leg_name = "leftup_leg_rot_";
+        string rightup_leg_name = "rightup_leg_rot_";
+        string left_leg_name = "left_leg_rot_";
+        string right_leg_name = "right_leg_rot_";
+        string spine_name = "spine_rot_";
+        string left_arm_name = "left_arm_rot_";
+        string right_arm_name = "right_arm_rot_";
+        string leftfore_arm_name = "leftfore_arm_rot_";
+        string rightfore_arm_name = "rightfore_arm_rot_";
+        string root_name = "base_pos_";
+        switch (trace_behavior)
+        {
+            case TraceBehavior.TraceRun:
+                hip_name = hip_name + "run";
+                leftup_leg_name = leftup_leg_name + "run";
+                rightup_leg_name = rightup_leg_name + "run";
+                left_leg_name = left_leg_name + "run";
+                right_leg_name = right_leg_name + "run";
+                spine_name = spine_name + "run";
+                left_arm_name = left_arm_name + "run";
+                right_arm_name = right_arm_name + "run";
+                leftfore_arm_name = leftfore_arm_name + "run";
+                rightfore_arm_name = rightfore_arm_name + "run";
+                root_name = root_name + "run";
+                break;
+            case TraceBehavior.TraceJump:
+                hip_name = hip_name + "jump";
+                leftup_leg_name = leftup_leg_name + "jump";
+                rightup_leg_name = rightup_leg_name + "jump";
+                left_leg_name = left_leg_name + "jump";
+                right_leg_name = right_leg_name + "jump";
+                spine_name = spine_name + "jump";
+                left_arm_name = left_arm_name + "jump";
+                right_arm_name = right_arm_name + "jump";
+                leftfore_arm_name = leftfore_arm_name + "jump";
+                rightfore_arm_name = rightfore_arm_name + "jump";
+                root_name = root_name + "jump";
+                break;
+            case TraceBehavior.TraceRoll:
+                hip_name = hip_name + "roll";
+                leftup_leg_name = leftup_leg_name + "roll";
+                rightup_leg_name = rightup_leg_name + "roll";
+                left_leg_name = left_leg_name + "roll";
+                right_leg_name = right_leg_name + "roll";
+                spine_name = spine_name + "roll";
+                left_arm_name = left_arm_name + "roll";
+                right_arm_name = right_arm_name + "roll";
+                leftfore_arm_name = leftfore_arm_name + "roll";
+                rightfore_arm_name = rightfore_arm_name + "roll";
+                root_name = root_name + "roll";
+                break;
+        }
+        sw.Write("protected float [,] " + hip_name + ";\n");
+        sw.Write("protected float [,] " + leftup_leg_name +";\n");
+        sw.Write("protected float [,] " + rightup_leg_name +";\n");
+        sw.Write("protected float [,] " + left_leg_name + ";\n");
+        sw.Write("protected float [,] " + right_leg_name + ";\n");
+        sw.Write("protected float [,] " + spine_name + ";\n");
+        sw.Write("protected float [,] " + left_arm_name +";\n");
+        sw.Write("protected float [,] " + right_arm_name +";\n");
+        sw.Write("protected float [,] " + leftfore_arm_name + ";\n");
+        sw.Write("protected float [,] " + rightfore_arm_name + ";\n");
+        sw.Write("protected float [,] " + root_name + ";\n");
 
-        sw.Write("\thip_rot_run = new float [,]");
+        sw.Write("\t" + hip_name + " = new float [,]");
         write_para(sw, hip_trace);
-        sw.Write("\n\n\tleftup_leg_rot_run = new float [,]");
+        sw.Write("\n\n\t" + leftup_leg_name + " = new float [,]");
         write_para(sw, leftup_leg_trace);
-        sw.Write("\n\n\trightup_leg_rot_run = new float [,]");
+        sw.Write("\n\n\t" + rightup_leg_name + " = new float [,]");
         write_para(sw, rightup_leg_trace);
-        sw.Write("\n\n\tleft_leg_rot_run = new float [,]");
+        sw.Write("\n\n\t" + left_leg_name + " = new float [,]");
         write_para(sw, left_leg_trace);
-        sw.Write("\n\n\tright_leg_rot_run = new float [,]");
+        sw.Write("\n\n\t" + right_leg_name + " = new float [,]");
         write_para(sw, right_leg_trace);
-        sw.Write("\n\n\tspine_rot_run = new float [,]");
+        sw.Write("\n\n\t" + spine_name + " = new float [,]");
         write_para(sw, spine_trace);
-        sw.Write("\n\n\tleft_arm_rot_run = new float [,]");
+        sw.Write("\n\n\t" + left_arm_name + " = new float [,]");
         write_para(sw, left_arm_trace);
-        sw.Write("\n\n\tright_arm_rot_run = new float [,]");
+        sw.Write("\n\n\t"  + right_arm_name + " = new float [,]");
         write_para(sw, right_arm_trace);
-        sw.Write("\n\n\tleftfore_arm_rot_run = new float [,]");
+        sw.Write("\n\n\t" + leftfore_arm_name + " = new float [,]");
         write_para(sw, leftfore_arm_trace);
-        sw.Write("\n\n\trightfore_arm_rot_run = new float [,]");
-        write_para(sw, rightfore_arm_trace);        
+        sw.Write("\n\n\t" + rightfore_arm_name + " = new float [,]");
+        write_para(sw, rightfore_arm_trace);
+        sw.Write("\n\n\t" + root_name + " = new float [,]");
+        write_para2(sw, root_motion_trace); 
         sw.Close();
     }
 }

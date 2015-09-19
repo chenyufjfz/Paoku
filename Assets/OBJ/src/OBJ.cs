@@ -12,13 +12,15 @@ using System.Net;
 public class OBJ : MonoBehaviour {
 	
     public Text text = null;
+#if STANDALONE_DEBUG
     public int myPort = 3850;
     protected Socket serverSocket;
     protected List<Socket> clientSocket;
     protected byte[] request = new byte[2048];
-    protected bool show_envelop, show_joint, show_body;
     /*socket command*/
     protected const string LOAD = "Load";
+#endif
+    protected bool show_envelop, show_joint, show_body;
 
 	/* OBJ file tags */
 	private const string O 	= "o";
@@ -46,9 +48,11 @@ public class OBJ : MonoBehaviour {
     protected MovePara move_para;
 
     public enum LoadState {
+        LOADOBJ,
         IDLE,
         RUNNING,
-        LOADOBJ
+        JUMP,
+        SLIDE
     };
     public LoadState load_state;
 
@@ -67,12 +71,13 @@ public class OBJ : MonoBehaviour {
 #endif
 #endif
          */
+#if STANDALONE_DEBUG
         IPAddress ip = IPAddress.Parse("127.0.0.1");
         serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
         serverSocket.Bind(new IPEndPoint(ip, myPort));
         serverSocket.Listen(5);
-
         clientSocket = new List<Socket>();
+#endif
         load_state = LoadState.IDLE;
         move_para = new MovePara();
         show_envelop = false;
@@ -80,11 +85,14 @@ public class OBJ : MonoBehaviour {
         show_body = true;
 
         gameObject.AddComponent<Animation>();
-        animation.AddClip(move_para.create_running(), "run");
+        animation.AddClip(move_para.create_move(Movement.RUN), "run");
+        animation.AddClip(move_para.create_move(Movement.JUMP), "jump");
+        animation.AddClip(move_para.create_move(Movement.SLIDE), "slide");
 	}
 
     void Update()
     {
+#if STANDALONE_DEBUG
         int i;
         if (serverSocket.Poll(0, SelectMode.SelectRead))
         {
@@ -136,7 +144,7 @@ public class OBJ : MonoBehaviour {
                 }
             }
         }
-        
+#endif
         if (Input.GetKeyDown(KeyCode.Alpha1))        
             show_hide_envelop();
 
@@ -150,40 +158,28 @@ public class OBJ : MonoBehaviour {
         if (load_state == LoadState.LOADOBJ || renderer.bones == null || renderer.bones.Length==0)
             return;
         
-        if (load_state == LoadState.RUNNING)
-        {  
-#if false
-            Transform[] bones = renderer.bones;
-            Quaternion[] rot;
-            move_para.get_next_movement(out rot);
-            GenerateBone.apply_posture(rot, bones);
-
-            renderer.bones = bones;
-#endif
-        }
-        else
+        if (load_state == LoadState.IDLE)
         {
             Transform[] bones = renderer.bones;
             Quaternion[] rot;
             rot = buffer.normal_rot;
             rot[GenerateBone.HIP] = Quaternion.identity;
             GenerateBone.apply_posture(rot, bones);
-
             renderer.bones = bones;
-        }
-            
-        
+        }          
         
     }
 
     void OnDestroy()
     {
+#if STANDALONE_DEBUG
         foreach (Socket s in clientSocket)
         {
             string str = "Goodbye";
             s.Send(System.Text.Encoding.ASCII.GetBytes(str));
             s.Close();
         }
+#endif
     }
 
     public void LoadObj(string path)
@@ -194,8 +190,11 @@ public class OBJ : MonoBehaviour {
             return;
         }
 
-        if (load_state == LoadState.RUNNING)
-            start_stop_run();
+        if (load_state != LoadState.IDLE)
+        {
+            load_state = LoadState.IDLE;
+            animation.Stop();            
+        }            
         load_state = LoadState.LOADOBJ;
         StartCoroutine(Load(path));        
     }
@@ -229,7 +228,6 @@ public class OBJ : MonoBehaviour {
 
 	public IEnumerator Load(string path) {
         renderer.enabled = false;
-        transform.eulerAngles = new Vector3(0,0,0);
         if (buffer != null)
             buffer.Release();
         buffer = new GeometryBuffer();
@@ -246,6 +244,7 @@ public class OBJ : MonoBehaviour {
 
         if (loader.error != null)
         {
+            Debug.Log(DateTime.Now.Second + "paoku load model failed" + loader.error);
             if (text!=null)
                 text.text = loader.error;
             yield break;
@@ -463,25 +462,34 @@ public class OBJ : MonoBehaviour {
 		}
 
         Debug.Log(DateTime.Now.Second + "." + DateTime.Now.Millisecond + "populate mesh start");
-		buffer.PopulateMeshes(ms, materials);
+        buffer.PopulateMeshes(ms, materials, MovePara.normalHeight);
         Debug.Log(DateTime.Now.Second + "." + DateTime.Now.Millisecond + "populate mesh end");
 	}
     
     public void start_stop_run()
-    {
-        if (load_state == LoadState.IDLE) 
+    {        
+        switch (load_state)
         {
-            load_state = LoadState.RUNNING;
-            animation.Play("run");
-            animation["run"].speed = 1f;
-        }            
-        else
-        if (load_state == LoadState.RUNNING)
-        {
-            load_state = LoadState.IDLE;
-            animation.Stop();
-        }
-            
+            case LoadState.IDLE:
+                load_state = LoadState.RUNNING;
+                animation.Play("run");
+                animation["run"].speed = 1f;
+                break;
+            case LoadState.RUNNING:
+                load_state = LoadState.JUMP;
+                animation.Play("jump");
+                animation["jump"].speed = 1f;
+                break;
+            case LoadState.JUMP:
+                load_state = LoadState.SLIDE;
+                animation.Play("slide");
+                animation["slide"].speed = 1f;
+                break;
+            case LoadState.SLIDE:
+                animation.Stop();
+                load_state = LoadState.IDLE;                
+                break;
+        }    
     }
 }
 

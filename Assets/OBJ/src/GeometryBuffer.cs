@@ -861,13 +861,13 @@ public class VerticesTopo
 
     public GameObject generate_joint()
     {
-        List<Vector3> line = new List<Vector3>();
         GameObject parent = new GameObject("center");
         parent.transform.position = new Vector3(0,0,0);
         parent.transform.eulerAngles = new Vector3(270, 0, 0);
         parent.transform.localScale = new Vector3(1, 1, 1);
 
 #if STANDALONE_DEBUG
+        List<Vector3> line = new List<Vector3>();
         for (int i = 0; i < 4; i++)
         {
             line.Clear();
@@ -1100,7 +1100,7 @@ public class GeometryBuffer {
         joints.SetActive(active);
     }
 
-	public void PopulateMeshes(GameObject[] gs, Dictionary<string, Material> mats) {
+	public void PopulateMeshes(GameObject[] gs, Dictionary<string, Material> mats, float high =-1) {
 		if(gs.Length != numObjects) return; // Should not happen unless obj file is corrupt...
 		
 		for(int i = 0; i < gs.Length; i++) {
@@ -1175,9 +1175,9 @@ public class GeometryBuffer {
                 m.boneWeights = weights;
                 GenerateBone.compute_normal(vtopo.joint_pos, out normal_pos, out normal_rot);
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-                bone_hip = GenerateBone.generate_bone(normal_pos, 10, out bones, true);
+                bone_hip = GenerateBone.generate_bone(normal_pos, 1, out bones, true);
 #else
-                bone_hip = GenerateBone.generate_bone(normal_pos, 10, out bones, false);
+                bone_hip = GenerateBone.generate_bone(normal_pos, 1, out bones, false);
 #endif
                 GenerateBone.apply_posture(normal_rot, bones);
                 bones[GenerateBone.HIP].parent.parent = gs[i].transform;
@@ -1187,7 +1187,11 @@ public class GeometryBuffer {
                 m.bindposes = bindPoses;
                 (gs[i].renderer as SkinnedMeshRenderer).sharedMesh = m;                
                 (gs[i].renderer as SkinnedMeshRenderer).bones = bones;
-                //bones[GenerateBone.HIP].parent.eulerAngles = new Vector3(0, 0, 0);
+                if (high>0)
+                    bones[GenerateBone.HIP].parent.localScale = new Vector3(high / vtopo.total_high, high / vtopo.total_high, high / vtopo.total_high);
+                bones[GenerateBone.HIP].parent.localPosition = new Vector3(0, 0, 0);
+                bones[GenerateBone.HIP].parent.eulerAngles = new Vector3(0, 270, 0);
+                bones[GenerateBone.HIP].localPosition = new Vector3(0, 0, 0);
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
                 System.IO.StreamWriter sw = new System.IO.StreamWriter("Normal.txt");
                 for (int j = 0; j < GenerateBone.TOTAL_PART; j++)
